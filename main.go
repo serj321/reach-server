@@ -16,6 +16,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
+type users struct {
+	email string
+	sub string
+	jwtToken string
+}
+
 func init() {
     if err := godotenv.Load(); err != nil {
         log.Fatalf("Error loading .env file: %v", err)
@@ -43,6 +49,7 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 
 func main() {
 	ctx := context.Background()
+	var profiles []users
 
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	clientSecret := os.Getenv("CLIENT_SECRET")
@@ -104,6 +111,10 @@ func main() {
 		if err != nil{
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+		profiles = append(profiles, users{
+			email: userInfo.Email,
+			sub: userInfo.Subject,
+		})
 		w.Write(data)
 	})
 	log.Printf("listening on http://%s/", "0.0.0.0:8080")
